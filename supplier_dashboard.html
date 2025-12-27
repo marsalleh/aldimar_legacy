@@ -1,0 +1,258 @@
+<?php 
+session_start();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
+  header("Location: login.html");
+  exit();
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supplier Notification - Aldimar Legacy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background-color: #f8f8fb;
+      display: flex;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #5e4b8b;
+      color: white;
+      padding: 20px;
+      height: 100vh;
+      position: fixed;
+      left: -250px;
+      top: 0;
+      transition: 0.3s;
+      overflow-x: hidden;
+      z-index: 1000;
+    }
+    .sidebar.active {
+      left: 0;
+    }
+    .sidebar h2 {
+      margin-bottom: 20px;
+    }
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .sidebar a:hover {
+      background-color: #7a5dca;
+    }
+    .main {
+      flex: 1;
+      margin-left: 0;
+      transition: margin-left 0.3s;
+    }
+    .main.active {
+      margin-left: 250px;
+    }
+    .topbar {
+      background-color: #5e4b8b;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+    }
+    .hamburger {
+      font-size: 20px;
+      cursor: pointer;
+      margin-right: 20px;
+    }
+    .topbar h1 {
+      flex: 1;
+      font-size: 20px;
+    }
+    .notifications {
+      padding: 20px;
+    }
+    .notification-box {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .notification-box .text {
+      max-width: 80%;
+    }
+    .notification-box button {
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .notification-box button:hover {
+      background-color: #c9302c;
+    }
+
+    /* Modal styling */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 25px;
+      border-radius: 10px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .modal-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .modal-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .modal-buttons button:first-child {
+      background-color: #d9534f;
+      color: white;
+    }
+
+    .modal-buttons button:first-child:hover {
+      background-color: #c9302c;
+    }
+
+    .modal-buttons button:last-child {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+
+    .modal-buttons button:last-child:hover {
+      background-color: #d5d5d5;
+    }
+
+    #confirmModal,
+    #successModal {
+      display: none;
+    }
+  </style>
+
+  <script>
+    let toDeleteElement = null;
+
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('active');
+      document.querySelector('.main').classList.toggle('active');
+    }
+
+    function deleteMessage(element) {
+      toDeleteElement = element;
+      document.getElementById("confirmModal").style.display = "flex";
+    }
+
+    function confirmDeletion() {
+      if (toDeleteElement) {
+        toDeleteElement.parentElement.remove();
+        toDeleteElement = null;
+        document.getElementById("confirmModal").style.display = "none";
+        document.getElementById("successModal").style.display = "flex";
+      }
+    }
+
+    function cancelDeletion() {
+      toDeleteElement = null;
+      document.getElementById("confirmModal").style.display = "none";
+    }
+
+    function closeSuccess() {
+      document.getElementById("successModal").style.display = "none";
+    }
+  </script>
+</head>
+
+<body>
+  <div class="sidebar active">
+    <h2>Supplier Menu</h2>
+    <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+
+  <div class="main active">
+    <div class="topbar">
+      <i class="fas fa-bars hamburger" onclick="toggleSidebar()"></i>
+      <h1>Notifications</h1>
+    </div>
+
+    <div class="notifications">
+      <div class="notification-box">
+        <div class="text"><strong>New User:</strong> New Restock Alert.</div>
+        <button onclick="deleteMessage(this)">Delete</button>
+      </div>
+      <div class="notification-box">
+        <div class="text"><strong>Low Inventory:</strong> Black scarf stock is running low.</div>
+        <button onclick="deleteMessage(this)">Delete</button>
+      </div>
+      <div class="notification-box">
+        <div class="text"><strong>Restock:</strong> Supplier requested restock for shawl chiffon.</div>
+        <button onclick="deleteMessage(this)">Delete</button>
+      </div>
+      <div class="notification-box">
+        <div class="text"><strong>Order Done:</strong> Restock order for scarf has been completed.</div>
+        <button onclick="deleteMessage(this)">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <p>Are you sure you want to delete this notification?</p>
+      <div class="modal-buttons">
+        <button onclick="confirmDeletion()">Yes</button>
+        <button onclick="cancelDeletion()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="modal">
+    <div class="modal-content">
+      <p>Notification deleted successfully!</p>
+      <div class="modal-buttons">
+        <button onclick="closeSuccess()">OK</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

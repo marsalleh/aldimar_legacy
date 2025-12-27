@@ -1,0 +1,172 @@
+/* Premium Popup Modal (Shared) */
+.modal-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-popup-content {
+    background: white;
+    padding: 40px;
+    border-radius: 35px;
+    width: 500px;
+    /* Fixed width for consistency */
+    min-height: 400px;
+    /* Fixed height for consistency */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    animation: popupSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popupSlideUp {
+    from {
+        transform: translateY(40px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-popup-content i.warning-icon {
+    font-size: 80px;
+    color: #eb4d4b;
+    /* Coral red */
+    margin-bottom: 25px;
+    display: block;
+}
+
+.modal-popup-content h3 {
+    color: #2d3436;
+    margin-bottom: 15px;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.modal-popup-content p {
+    color: #636e72;
+    margin-bottom: 40px;
+    font-size: 19px;
+    line-height: 1.6;
+}
+
+.modal-popup-footer {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.btn-popup-confirm {
+    background: #eb4d4b;
+    /* Coral red */
+    color: white;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 18px;
+    flex: 1;
+}
+
+.btn-popup-confirm:hover {
+    background: #d43f3d;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(235, 77, 75, 0.4);
+}
+
+.btn-popup-cancel {
+    background: #f1f2f6;
+    /* Light grey */
+    color: #2d3436;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 18px;
+    flex: 1;
+}
+
+.btn-popup-cancel:hover {
+    background: #dfe4ea;
+    transform: translateY(-3px);
+}
+
+/* Toast Notification (Pill Shape) */
+.toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 50px;
+    padding: 16px;
+    position: fixed;
+    z-index: 6000;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 17px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}

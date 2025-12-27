@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Employee Dashboard - Aldimar Legacy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f8fb;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: #5e4b8b;
+      color: white;
+      padding: 20px;
+      height: 100vh;
+      position: fixed;
+      left: -250px;
+      top: 0;
+      transition: 0.3s;
+      overflow-x: hidden;
+      z-index: 1000;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .sidebar h2 {
+      margin-bottom: 20px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #7a5dca;
+    }
+
+    .sidebar .bottom-logout {
+      position: absolute;
+      bottom: 20px;
+      width: 85%;
+    }
+
+    .sidebar .bottom-logout a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 10px 20px;
+    }
+
+    .sidebar .bottom-logout a:hover {
+      background-color: #7a5dca;
+      border-radius: 6px;
+    }
+
+    .main {
+      flex: 1;
+      margin-left: 0;
+      transition: margin-left 0.3s;
+    }
+
+    .main.active {
+      margin-left: 250px;
+    }
+
+    .topbar {
+      background-color: #5e4b8b;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+    }
+
+    .hamburger {
+      font-size: 20px;
+      cursor: pointer;
+      margin-right: 20px;
+    }
+
+    .search-bar {
+      flex: 1;
+      margin: 0 20px;
+    }
+
+    .search-bar input[type="text"] {
+      width: 100%;
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+    }
+
+    .icon-bar {
+      display: flex;
+      align-items: center;
+      margin-left: 20px;
+    }
+
+    .icon-bar i {
+      font-size: 18px;
+      margin-left: 20px;
+      cursor: pointer;
+    }
+
+    .cards {
+      display: flex;
+      gap: 20px;
+      margin: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      flex: 1;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .card h3 {
+      color: #5e4b8b;
+      margin-bottom: 10px;
+    }
+  </style>
+  <script>
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('active');
+      document.querySelector('.main').classList.toggle('active');
+    }
+  </script>
+</head>
+<body>
+  <div class="sidebar active">
+    <h2>Employee Menu</h2>
+    <a href="#">Inventory</a>
+    <a href="#">Record Sales</a>
+
+    <div class="bottom-logout">
+    <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+  </div>
+
+  <div class="main active">
+    <div class="topbar">
+      <i class="fas fa-bars hamburger" onclick="toggleSidebar()"></i>
+      <div class="search-bar">
+        <input type="text" placeholder="Search inventory, users, or reports">
+      </div>
+      <div class="icon-bar">
+        <a href="employee_notification.php" title="Notifications" style="color: white;">
+        <i class="fas fa-bell"></i>
+        </a>
+        <i class="fas fa-user-circle"></i>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Total Inventory Items</h3>
+        <p>320</p>
+      </div>
+      <div class="card">
+        <h3>Low Stock Items</h3>
+        <p>8</p>
+      </div>
+      <div class="card">
+        <h3>Today's Sales</h3>
+        <p>RM 850.00</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin: 0 30px 30px 30px;">
+      <h3>Recent Activities</h3>
+      <p>Recorded 3 sales today. Updated 5 inventory items.</p>
+    </div>
+  </div>
+</body>
+</html>
