@@ -1,14 +1,13 @@
 <?php
 session_start();
 if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['Admin', 'Employee'])) {
-  echo "<script>alert('Access denied.'); window.location.href='login.php';</script>";
+  echo "<script>alert('Access denied.'); window.location.href='index.php';</script>";
   exit;
 }
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
-$conn = new mysqli("localhost", "root", "", "aldimar_db");
-if ($conn->connect_error)
-  die("Connection failed: " . $conn->connect_error);
+require_once 'db_config.php';
+
 
 // Handle Add Sale
 if (isset($_POST['add_sales'])) {

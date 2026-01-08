@@ -3,14 +3,12 @@ session_start();
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Employee') {
-  echo "<script>alert('Access denied. Employees only!'); window.location.href='login.php';</script>";
+  echo "<script>alert('Access denied. Employees only!'); window.location.href='index.php';</script>";
   exit;
 }
 
-$conn = new mysqli("localhost", "root", "", "aldimar_db");
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+require_once 'db_config.php';
+
 
 // Handle Delete Notification
 if (isset($_GET['delete_id'])) {
@@ -555,7 +553,7 @@ $conn->close();
 
   <script>
     // Toast Logic
-    window.onload = function() {
+    window.onload = function () {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('profile_updated')) {
         showToast("Profile updated successfully!");
@@ -567,7 +565,7 @@ $conn->close();
       var x = document.getElementById("toast");
       x.innerHTML = '<i class="fas fa-check-circle" style="color: #2ecc71;"></i> ' + message;
       x.className = "toast show";
-      setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+      setTimeout(function () { x.className = x.className.replace("show", ""); }, 3000);
     }
 
     function toggleSidebar() {

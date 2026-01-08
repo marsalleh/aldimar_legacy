@@ -3,15 +3,8 @@
 session_start();
 
 // Database connection
-$servername = "localhost";
-$dbUsername = "root";
-$dbPassword = "";
-$dbName = "aldimar_db";
+require_once 'db_config.php';
 
-$conn = new mysqli($servername, $dbUsername, $dbPassword, $dbName);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 $message = "";
 $messageType = "";
@@ -47,8 +40,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Send Notification to Admin
             $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('New User Registered: $username', 'Admin', NOW())");
 
-            // Redirect to login.php which has been refactored
-            echo "<script>alert('Registration successful! Please wait for Admin to assign your role.'); window.location.href='login.php';</script>";
+            // Redirect to index.php which has been refactored
+            echo "<script>alert('Registration successful! Please wait for Admin to assign your role.'); window.location.href='index.php';</script>";
             exit;
         } else {
             $message = "Registration failed. Please try again.";
@@ -214,7 +207,7 @@ $conn->close();
         </form>
 
         <div class="login-link">
-            Already have an account? <a href="login.php">Login</a>
+            Already have an account? <a href="index.php">Login</a>
         </div>
     </div>
 

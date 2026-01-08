@@ -2,13 +2,12 @@
 session_start();
 date_default_timezone_set('Asia/Kuala_Lumpur');
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    echo "<script>alert('Access denied. Admin only!'); window.location.href='login.php';</script>";
+    echo "<script>alert('Access denied. Admin only!'); window.location.href='index.php';</script>";
     exit;
 }
 
-$conn = new mysqli("localhost", "root", "", "aldimar_db");
-if ($conn->connect_error)
-    die("Connection failed: " . $conn->connect_error);
+require_once 'db_config.php';
+
 
 // Filter Logic
 $reportType = $_GET['report_type'] ?? 'daily'; // daily, monthly, yearly, specific_date

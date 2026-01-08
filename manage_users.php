@@ -2,20 +2,13 @@
 session_start();
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-  echo "<script>alert('Access denied. Admins only!'); window.location.href='login.php';</script>";
+  echo "<script>alert('Access denied. Admins only!'); window.location.href='index.php';</script>";
   exit;
 }
 
 // Database Connection
-$servername = "localhost";
-$dbUsername = "root";
-$dbPassword = "";
-$dbName = "aldimar_db";
+require_once 'db_config.php';
 
-$conn = new mysqli($servername, $dbUsername, $dbPassword, $dbName);
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
@@ -64,7 +57,7 @@ if (isset($_POST['update'])) {
 // Handle Delete Request
 if (isset($_GET['delete'])) {
   if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    echo "<script>alert('Access denied. Admin only!'); window.location.href='login.php';</script>";
+    echo "<script>alert('Access denied. Admin only!'); window.location.href='index.php';</script>";
     exit;
   }
   $deleteID = intval($_GET['delete']);

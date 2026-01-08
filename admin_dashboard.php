@@ -3,20 +3,12 @@ session_start();
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-  echo "<script>alert('Access denied. Admin only!'); window.location.href='login.php';</script>";
+  echo "<script>alert('Access denied. Admin only!'); window.location.href='index.php';</script>";
   exit;
 }
 
 // Database Connection
-$servername = "localhost";
-$dbUsername = "root";
-$dbPassword = "";
-$dbName = "aldimar_db";
-
-$conn = new mysqli($servername, $dbUsername, $dbPassword, $dbName);
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+require_once 'db_config.php';
 
 // 1. Fetch Metrics
 // Total Products

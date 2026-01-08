@@ -1,15 +1,8 @@
 <?php
 session_start();
 
-$servername = "localhost";
-$dbUsername = "root";
-$dbPassword = "";
-$dbName = "aldimar_db";
+require_once 'db_config.php';
 
-$conn = new mysqli($servername, $dbUsername, $dbPassword, $dbName);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 $message = "";
 $messageType = "";
@@ -58,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     // $message .= " (Email could not be sent in this environment)";
                 }
 
-                echo "<script>alert('$message'); window.location.href='login.html';</script>";
+                echo "<script>alert('$message'); window.location.href='index.php';</script>";
                 exit; // Stop execution after redirect
             } else {
                 $message = "Error updating password in database.";
@@ -228,7 +221,7 @@ $conn->close();
         </form>
 
         <div class="back-link">
-            <a href="login.php">Back to Login</a>
+            <a href="index.php">Back to Login</a>
         </div>
     </div>
 
