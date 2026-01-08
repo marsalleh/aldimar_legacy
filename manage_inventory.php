@@ -864,9 +864,6 @@ while ($s = $supList->fetch_assoc()) {
   </div>
 
 
-  <!-- Success Modal -->
-
-
   <!-- Standard Delete Modal -->
   <div id="deleteModal" class="modal-popup">
     <div class="modal-popup-content">

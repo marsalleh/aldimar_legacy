@@ -55,7 +55,6 @@ if (isset($_GET['delete'])) {
 }
 
 // Handle Delete Restock Request
-// Handle Delete Restock Request
 if (isset($_GET['delete_request'])) {
   $reqID = intval($_GET['delete_request']);
 
