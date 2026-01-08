@@ -8,9 +8,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Supplier Notification - Aldimar Legacy</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
@@ -20,10 +21,12 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
       box-sizing: border-box;
       font-family: Arial, sans-serif;
     }
+
     body {
       background-color: #f8f8fb;
       display: flex;
     }
+
     .sidebar {
       width: 250px;
       background-color: #5e4b8b;
@@ -37,12 +40,15 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
       overflow-x: hidden;
       z-index: 1000;
     }
+
     .sidebar.active {
       left: 0;
     }
+
     .sidebar h2 {
       margin-bottom: 20px;
     }
+
     .sidebar a {
       display: block;
       color: white;
@@ -51,17 +57,21 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
       padding: 10px;
       border-radius: 6px;
     }
+
     .sidebar a:hover {
       background-color: #7a5dca;
     }
+
     .main {
       flex: 1;
       margin-left: 0;
       transition: margin-left 0.3s;
     }
+
     .main.active {
       margin-left: 250px;
     }
+
     .topbar {
       background-color: #5e4b8b;
       color: white;
@@ -69,31 +79,37 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
       align-items: center;
       padding: 15px 20px;
     }
+
     .hamburger {
       font-size: 20px;
       cursor: pointer;
       margin-right: 20px;
     }
+
     .topbar h1 {
       flex: 1;
       font-size: 20px;
     }
+
     .notifications {
       padding: 20px;
     }
+
     .notification-box {
       background: white;
       padding: 15px;
       margin-bottom: 10px;
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
     .notification-box .text {
       max-width: 80%;
     }
+
     .notification-box button {
       background-color: #d9534f;
       color: white;
@@ -102,6 +118,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
       border-radius: 5px;
       cursor: pointer;
     }
+
     .notification-box button:hover {
       background-color: #c9302c;
     }
@@ -113,7 +130,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(0,0,0,0.5);
+      background-color: rgba(0, 0, 0, 0.5);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -126,7 +143,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
       border-radius: 10px;
       text-align: center;
       width: 300px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .modal-buttons {
@@ -255,4 +272,5 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Supplier') {
   </div>
 
 </body>
+
 </html>
