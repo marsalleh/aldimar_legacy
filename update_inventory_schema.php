@@ -4,10 +4,10 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "ALTER TABLE Tbl_inventory ADD COLUMN tags VARCHAR(255) DEFAULT '' AFTER category";
+$sql = "ALTER TABLE tbl_inventory ADD COLUMN tags VARCHAR(255) DEFAULT '' AFTER category";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Column 'tags' added successfully to Tbl_inventory";
+    echo "Column 'tags' added successfully to tbl_inventory";
 } else {
     // If it already exists, just ignore the error
     if ($conn->errno == 1060) {

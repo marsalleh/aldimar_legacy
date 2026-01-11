@@ -11,32 +11,32 @@ require_once 'db_config.php';
 // Handle Delete Notification
 if (isset($_GET['delete_id'])) {
   $id = intval($_GET['delete_id']);
-  $conn->query("DELETE FROM Tbl_notification WHERE notifID = $id");
+  $conn->query("DELETE FROM tbl_notification WHERE notifID = $id");
   header("Location: admin_notification.php");
   exit();
 }
 
 // Handle Clear All
 if (isset($_GET['clear_all'])) {
-  $conn->query("DELETE FROM Tbl_notification WHERE recipientRole = 'Admin'");
+  $conn->query("DELETE FROM tbl_notification WHERE recipientRole = 'Admin'");
   header("Location: admin_notification.php");
   exit();
 }
 
 
 // 1. Count Unread (Before updating)
-$unreadRes = $conn->query("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
+$unreadRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
 $notifCount = $unreadRes->fetch_assoc()['count'];
 
 // 2. Fetch Notifications
-$result = $conn->query("SELECT * FROM Tbl_notification WHERE recipientRole = 'Admin' ORDER BY dateSent DESC");
+$result = $conn->query("SELECT * FROM tbl_notification WHERE recipientRole = 'Admin' ORDER BY dateSent DESC");
 
 // 3. Mark as Read
-$conn->query("UPDATE Tbl_notification SET is_read = 1 WHERE recipientRole = 'Admin' AND is_read = 0");
+$conn->query("UPDATE tbl_notification SET is_read = 1 WHERE recipientRole = 'Admin' AND is_read = 0");
 
 // Fetch Data for Sidebar (Profile & Inventory/Suppliers for Restock)
 $userID = $_SESSION['userID'];
-$userRes = $conn->query("SELECT * FROM Tbl_user WHERE userID = $userID");
+$userRes = $conn->query("SELECT * FROM tbl_user WHERE userID = $userID");
 $profileData = $userRes->fetch_assoc();
 
 
@@ -50,10 +50,10 @@ if (isset($_POST['update_profile'])) {
 
   if (!empty($password)) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
     $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
   } else {
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
     $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
   }
 

@@ -5,7 +5,7 @@ if ($conn->connect_error) {
 }
 
 // 1. Modify itemID to allow NULL
-$sql1 = "ALTER TABLE Tbl_salesrecord MODIFY itemID INT(11) NULL";
+$sql1 = "ALTER TABLE tbl_salesrecord MODIFY itemID INT(11) NULL";
 if ($conn->query($sql1) === TRUE) {
     echo "1. itemID column modified to allow NULL.\n";
 } else {
@@ -14,7 +14,7 @@ if ($conn->query($sql1) === TRUE) {
 
 // 2. Drop existing Foreign Key
 // Note: Verification script showed 'tbl_salesrecord_ibfk_1'
-$sql2 = "ALTER TABLE Tbl_salesrecord DROP FOREIGN KEY tbl_salesrecord_ibfk_1";
+$sql2 = "ALTER TABLE tbl_salesrecord DROP FOREIGN KEY tbl_salesrecord_ibfk_1";
 if ($conn->query($sql2) === TRUE) {
     echo "2. Old Foreign Key dropped.\n";
 } else {
@@ -22,7 +22,7 @@ if ($conn->query($sql2) === TRUE) {
 }
 
 // 3. Add new Foreign Key with ON DELETE SET NULL
-$sql3 = "ALTER TABLE Tbl_salesrecord ADD CONSTRAINT tbl_salesrecord_ibfk_1 FOREIGN KEY (itemID) REFERENCES Tbl_inventory(itemID) ON DELETE SET NULL";
+$sql3 = "ALTER TABLE tbl_salesrecord ADD CONSTRAINT tbl_salesrecord_ibfk_1 FOREIGN KEY (itemID) REFERENCES tbl_inventory(itemID) ON DELETE SET NULL";
 if ($conn->query($sql3) === TRUE) {
     echo "3. New Foreign Key with ON DELETE SET NULL added.\n";
 } else {

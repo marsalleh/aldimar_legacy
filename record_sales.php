@@ -26,30 +26,30 @@ if (isset($_POST['add_sales'])) {
 
   $conn->begin_transaction();
   try {
-    $stmt = $conn->prepare("INSERT INTO Tbl_salesRecord (itemID, date, price, quantity, totalPrice) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO tbl_salesrecord (itemID, date, price, quantity, totalPrice) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("isdid", $itemID, $timestamp, $price, $quantity, $totalPrice);
     $stmt->execute();
 
     // Deduct Stock
-    $update = $conn->prepare("UPDATE Tbl_inventory SET stockQuantity = stockQuantity - ? WHERE itemID = ?");
+    $update = $conn->prepare("UPDATE tbl_inventory SET stockQuantity = stockQuantity - ? WHERE itemID = ?");
     $update->bind_param("ii", $quantity, $itemID);
     $update->execute();
 
     // Check Threshold
     // Check Threshold & Notify if needed
     // First, check if status changed to Low Stock
-    $checkStatus = $conn->query("SELECT stockQuantity, threshold, itemName FROM Tbl_inventory WHERE itemID = $itemID");
+    $checkStatus = $conn->query("SELECT stockQuantity, threshold, itemName FROM tbl_inventory WHERE itemID = $itemID");
     $itemData = $checkStatus->fetch_assoc();
 
     if ($itemData['stockQuantity'] <= $itemData['threshold']) {
-      $conn->query("UPDATE Tbl_inventory SET status = 'Low Stock' WHERE itemID = $itemID");
+      $conn->query("UPDATE tbl_inventory SET status = 'Low Stock' WHERE itemID = $itemID");
 
       // Insert Notification for Admin AND Employee
       $msg = "Low stock alert for " . $itemData['itemName'];
-      $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('$msg', 'Admin', NOW())");
-      $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('$msg', 'Employee', NOW())");
+      $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('$msg', 'Admin', NOW())");
+      $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('$msg', 'Employee', NOW())");
     } else {
-      $conn->query("UPDATE Tbl_inventory SET status = 'Available' WHERE itemID = $itemID");
+      $conn->query("UPDATE tbl_inventory SET status = 'Available' WHERE itemID = $itemID");
     }
 
     $conn->commit();
@@ -74,7 +74,7 @@ if (isset($_POST['edit_sales'])) {
   $conn->begin_transaction();
   try {
     // 1. Fetch Original Record
-    $origQuery = $conn->query("SELECT * FROM Tbl_salesRecord WHERE saleID = $saleID");
+    $origQuery = $conn->query("SELECT * FROM tbl_salesrecord WHERE saleID = $saleID");
     if ($origQuery->num_rows === 0)
       throw new Exception("Sale record not found.");
     $orig = $origQuery->fetch_assoc();
@@ -82,17 +82,17 @@ if (isset($_POST['edit_sales'])) {
     $oldQuantity = $orig['quantity'];
 
     // 2. Revert Old Inventory (Add back old quantity)
-    $conn->query("UPDATE Tbl_inventory SET stockQuantity = stockQuantity + $oldQuantity WHERE itemID = $oldItemID");
+    $conn->query("UPDATE tbl_inventory SET stockQuantity = stockQuantity + $oldQuantity WHERE itemID = $oldItemID");
     // Check status for old item
-    $conn->query("UPDATE Tbl_inventory SET status = CASE WHEN stockQuantity <= threshold THEN 'Low Stock' ELSE 'Available' END WHERE itemID = $oldItemID");
+    $conn->query("UPDATE tbl_inventory SET status = CASE WHEN stockQuantity <= threshold THEN 'Low Stock' ELSE 'Available' END WHERE itemID = $oldItemID");
 
     // 3. Deduct New Inventory (Subtract new quantity)
-    $conn->query("UPDATE Tbl_inventory SET stockQuantity = stockQuantity - $newQuantity WHERE itemID = $newItemID");
+    $conn->query("UPDATE tbl_inventory SET stockQuantity = stockQuantity - $newQuantity WHERE itemID = $newItemID");
     // Check status for new item
-    $conn->query("UPDATE Tbl_inventory SET status = CASE WHEN stockQuantity <= threshold THEN 'Low Stock' ELSE 'Available' END WHERE itemID = $newItemID");
+    $conn->query("UPDATE tbl_inventory SET status = CASE WHEN stockQuantity <= threshold THEN 'Low Stock' ELSE 'Available' END WHERE itemID = $newItemID");
 
     // 4. Update Sale Record
-    $stmt = $conn->prepare("UPDATE Tbl_salesRecord SET itemID=?, price=?, quantity=?, totalPrice=? WHERE saleID=?");
+    $stmt = $conn->prepare("UPDATE tbl_salesrecord SET itemID=?, price=?, quantity=?, totalPrice=? WHERE saleID=?");
     $stmt->bind_param("idddi", $newItemID, $newPrice, $newQuantity, $newTotalPrice, $saleID);
     $stmt->execute();
 
@@ -114,7 +114,7 @@ if (isset($_GET['delete'])) {
   $conn->begin_transaction();
   try {
     // 1. Fetch Sale Details
-    $stmt = $conn->prepare("SELECT itemID, quantity FROM Tbl_salesRecord WHERE saleID = ?");
+    $stmt = $conn->prepare("SELECT itemID, quantity FROM tbl_salesrecord WHERE saleID = ?");
     $stmt->bind_param("i", $saleID);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -125,15 +125,15 @@ if (isset($_GET['delete'])) {
       $quantity = $sale['quantity'];
 
       // 2. Restore Inventory
-      $updateStmt = $conn->prepare("UPDATE Tbl_inventory SET stockQuantity = stockQuantity + ? WHERE itemID = ?");
+      $updateStmt = $conn->prepare("UPDATE tbl_inventory SET stockQuantity = stockQuantity + ? WHERE itemID = ?");
       $updateStmt->bind_param("ii", $quantity, $itemID);
       $updateStmt->execute();
 
       // 3. Update Status
-      $conn->query("UPDATE Tbl_inventory SET status = CASE WHEN stockQuantity <= threshold THEN 'Low Stock' ELSE 'Available' END WHERE itemID = $itemID");
+      $conn->query("UPDATE tbl_inventory SET status = CASE WHEN stockQuantity <= threshold THEN 'Low Stock' ELSE 'Available' END WHERE itemID = $itemID");
 
       // 4. Delete Record
-      $delStmt = $conn->prepare("DELETE FROM Tbl_salesRecord WHERE saleID = ?");
+      $delStmt = $conn->prepare("DELETE FROM tbl_salesrecord WHERE saleID = ?");
       $delStmt->bind_param("i", $saleID);
       $delStmt->execute();
     }
@@ -169,7 +169,7 @@ if (!empty($search)) {
   $conditions[] = "(i.itemName LIKE '%$search%' OR s.price LIKE '%$search%' OR s.totalPrice LIKE '%$search%')";
 }
 
-$query = "SELECT s.*, i.itemName FROM Tbl_salesRecord s LEFT JOIN Tbl_inventory i ON s.itemID = i.itemID";
+$query = "SELECT s.*, i.itemName FROM tbl_salesrecord s LEFT JOIN tbl_inventory i ON s.itemID = i.itemID";
 
 if (!empty($conditions)) {
   $query .= " WHERE " . implode(' AND ', $conditions);
@@ -178,11 +178,11 @@ if (!empty($conditions)) {
 $query .= " ORDER BY s.date DESC, s.saleID DESC";
 
 $sales = $conn->query($query);
-$inventory = $conn->query("SELECT itemID, itemName, sellingPrice FROM Tbl_inventory");
+$inventory = $conn->query("SELECT itemID, itemName, sellingPrice FROM tbl_inventory");
 
 // Fetch Data for Sidebar (Profile & Inventory/Suppliers for Restock)
 $userID = $_SESSION['userID'];
-$userRes = $conn->query("SELECT * FROM Tbl_user WHERE userID = $userID");
+$userRes = $conn->query("SELECT * FROM tbl_user WHERE userID = $userID");
 $profileData = $userRes->fetch_assoc();
 
 
@@ -196,10 +196,10 @@ if (isset($_POST['update_profile'])) {
 
   if (!empty($password)) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
     $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
   } else {
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
     $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
   }
 
@@ -216,7 +216,7 @@ if (isset($_POST['update_profile'])) {
 // Count Unread Notifications
 // Check role for Notification Badge
 $role = $_SESSION['role'];
-$notifRes = $conn->query("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = '$role' AND is_read = 0");
+$notifRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = '$role' AND is_read = 0");
 $notifCount = $notifRes->fetch_assoc()['count'];
 ?>
 <!DOCTYPE html>

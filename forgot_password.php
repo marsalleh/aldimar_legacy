@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $messageType = "error";
     } else {
         // Check if user exists with matching username AND email
-        $stmt = $conn->prepare("SELECT userID, email FROM Tbl_user WHERE username = ? AND email = ?");
+        $stmt = $conn->prepare("SELECT userID, email FROM tbl_user WHERE username = ? AND email = ?");
         $stmt->bind_param("ss", $username, $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Update password
             $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
-            $updateStmt = $conn->prepare("UPDATE Tbl_user SET password = ? WHERE userID = ?");
+            $updateStmt = $conn->prepare("UPDATE tbl_user SET password = ? WHERE userID = ?");
             $updateStmt->bind_param("si", $hashedPassword, $userID);
 
             if ($updateStmt->execute()) {

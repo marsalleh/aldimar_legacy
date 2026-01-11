@@ -18,7 +18,7 @@ if (isset($_POST['update'])) {
   $userID = $_POST['userID'];
 
   // Update role
-  $sql = "UPDATE Tbl_user SET role=? WHERE userID=?";
+  $sql = "UPDATE tbl_user SET role=? WHERE userID=?";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("si", $newRole, $userID);
   $stmt->execute();
@@ -27,14 +27,14 @@ if (isset($_POST['update'])) {
   // Auto-insert into tbl_supplier if new role is Supplier
   if ($newRole === 'Supplier') {
     // Check if already exists in tbl_supplier
-    $check = $conn->prepare("SELECT * FROM tbl_supplier WHERE email = (SELECT email FROM Tbl_user WHERE userID = ?)");
+    $check = $conn->prepare("SELECT * FROM tbl_supplier WHERE email = (SELECT email FROM tbl_user WHERE userID = ?)");
     $check->bind_param("i", $userID);
     $check->execute();
     $result = $check->get_result();
 
     if ($result->num_rows === 0) {
       // Get user details
-      $get = $conn->prepare("SELECT name, email, phone FROM Tbl_user WHERE userID = ?");
+      $get = $conn->prepare("SELECT name, email, phone FROM tbl_user WHERE userID = ?");
       $get->bind_param("i", $userID);
       $get->execute();
       $user = $get->get_result()->fetch_assoc();
@@ -61,25 +61,25 @@ if (isset($_GET['delete'])) {
     exit;
   }
   $deleteID = intval($_GET['delete']);
-  $conn->query("DELETE FROM Tbl_user WHERE userID = $deleteID");
+  $conn->query("DELETE FROM tbl_user WHERE userID = $deleteID");
   header("Location: manage_users.php?deleted=1");
   exit();
 }
 
 // Fetch Users with Search
 if ($search !== '') {
-  $stmt = $conn->prepare("SELECT * FROM Tbl_user WHERE username LIKE ? OR role LIKE ?");
+  $stmt = $conn->prepare("SELECT * FROM tbl_user WHERE username LIKE ? OR role LIKE ?");
   $searchTerm = "%$search%";
   $stmt->bind_param("ss", $searchTerm, $searchTerm);
   $stmt->execute();
   $result = $stmt->get_result();
 } else {
-  $result = $conn->query("SELECT * FROM Tbl_user");
+  $result = $conn->query("SELECT * FROM tbl_user");
 }
 
 // Fetch Data for Sidebar (Profile & Inventory/Suppliers for Restock)
 $userID = $_SESSION['userID'];
-$userRes = $conn->query("SELECT * FROM Tbl_user WHERE userID = $userID");
+$userRes = $conn->query("SELECT * FROM tbl_user WHERE userID = $userID");
 $profileData = $userRes->fetch_assoc();
 
 
@@ -93,10 +93,10 @@ if (isset($_POST['update_profile'])) {
 
   if (!empty($password)) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
     $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
   } else {
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
     $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
   }
 
@@ -111,7 +111,7 @@ if (isset($_POST['update_profile'])) {
 }
 
 // Count Unread Notifications
-$notifRes = $conn->query("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
+$notifRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
 $notifCount = $notifRes->fetch_assoc()['count'];
 ?>
 

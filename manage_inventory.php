@@ -23,13 +23,13 @@ if (isset($_POST['add_product'])) {
   $threshold = $_POST['threshold'];
   $status = ($quantity <= $threshold) ? 'Low Stock' : 'Available';
 
-  $stmt = $conn->prepare("INSERT INTO Tbl_inventory (itemName, category, price, sellingPrice, stockQuantity, threshold, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+  $stmt = $conn->prepare("INSERT INTO tbl_inventory (itemName, category, price, sellingPrice, stockQuantity, threshold, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
   $stmt->bind_param("ssddiss", $name, $category, $price, $sellingPrice, $quantity, $threshold, $status);
 
   if ($stmt->execute()) {
     if ($status === 'Low Stock') {
-      $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('Low stock alert for $name', 'Admin', NOW())");
-      $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('Low stock alert for $name', 'Employee', NOW())");
+      $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('Low stock alert for $name', 'Admin', NOW())");
+      $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('Low stock alert for $name', 'Employee', NOW())");
     }
     header("Location: manage_inventory.php?added=1");
     exit();
@@ -47,22 +47,22 @@ if (isset($_POST['save_edit'])) {
   $status = ($quantity <= $threshold) ? 'Low Stock' : 'Available';
 
   // Fetch old data to check for restock
-  $oldQQuery = $conn->query("SELECT stockQuantity FROM Tbl_inventory WHERE itemID=$id");
+  $oldQQuery = $conn->query("SELECT stockQuantity FROM tbl_inventory WHERE itemID=$id");
   $oldQ = $oldQQuery->fetch_assoc()['stockQuantity'];
 
-  $stmt = $conn->prepare("UPDATE Tbl_inventory SET itemName=?, category=?, price=?, sellingPrice=?, stockQuantity=?, threshold=?, status=? WHERE itemID=?");
+  $stmt = $conn->prepare("UPDATE tbl_inventory SET itemName=?, category=?, price=?, sellingPrice=?, stockQuantity=?, threshold=?, status=? WHERE itemID=?");
   $stmt->bind_param("ssddissi", $name, $category, $price, $sellingPrice, $quantity, $threshold, $status, $id);
   $stmt->execute();
 
   // Notifications
   if ($status === 'Low Stock') {
     // Notifications
-    $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('Low stock alert for $name (Qty: $quantity)', 'Admin', NOW())");
-    $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('Low stock alert for $name (Qty: $quantity)', 'Employee', NOW())");
+    $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('Low stock alert for $name (Qty: $quantity)', 'Admin', NOW())");
+    $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('Low stock alert for $name (Qty: $quantity)', 'Employee', NOW())");
   }
   if ($quantity > $oldQ) {
-    $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('Restock: $name quantity increased to $quantity', 'Admin', NOW())");
-    $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('Restock: $name quantity increased to $quantity', 'Employee', NOW())");
+    $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('Restock: $name quantity increased to $quantity', 'Admin', NOW())");
+    $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('Restock: $name quantity increased to $quantity', 'Employee', NOW())");
   }
 
   header("Location: manage_inventory.php?updated=1");
@@ -73,7 +73,7 @@ if (isset($_POST['save_edit'])) {
 if (isset($_GET['delete'])) {
   $deleteID = intval($_GET['delete']);
   try {
-    $conn->query("DELETE FROM Tbl_inventory WHERE itemID = $deleteID");
+    $conn->query("DELETE FROM tbl_inventory WHERE itemID = $deleteID");
     header("Location: manage_inventory.php?deleted=1");
     exit();
   } catch (mysqli_sql_exception $e) {
@@ -92,24 +92,24 @@ if (isset($_POST['request_restock'])) {
   $itemID = $_POST['restockID'];
   $quantity = $_POST['restockQuantity'];
 
-  $res = $conn->query("SELECT itemName FROM Tbl_inventory WHERE itemID=$itemID");
+  $res = $conn->query("SELECT itemName FROM tbl_inventory WHERE itemID=$itemID");
   if ($res->num_rows > 0) {
     $itemName = $res->fetch_assoc()['itemName'];
     // Insert Logic (With Supplier Name)
     $supplierID = $_POST['supplierID'];
     $sName = "Unknown";
-    $sRes = $conn->query("SELECT name FROM Tbl_supplier WHERE supplierID=$supplierID");
+    $sRes = $conn->query("SELECT name FROM tbl_supplier WHERE supplierID=$supplierID");
     if ($sRes->num_rows > 0) {
       $sName = $sRes->fetch_assoc()['name'];
     }
 
-    $stmt = $conn->prepare("INSERT INTO Tbl_restock_request (itemID, itemName, quantity, status, supplierName, requestDate) VALUES (?, ?, ?, 'Pending', ?, NOW())");
+    $stmt = $conn->prepare("INSERT INTO tbl_restock_request (itemID, itemName, quantity, status, supplierName, requestDate) VALUES (?, ?, ?, 'Pending', ?, NOW())");
     $stmt->bind_param("isss", $itemID, $itemName, $quantity, $sName);
     $stmt->execute();
 
     // Notify Supplier (Ideally we'd notify the specific supplier user, but for now generic 'Supplier' role + name in message)
     $msg = "New Restock Request for $sName: $itemName (Qty: $quantity)";
-    $stmtNotif = $conn->prepare("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES (?, 'Supplier', NOW())");
+    $stmtNotif = $conn->prepare("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES (?, 'Supplier', NOW())");
     $stmtNotif->bind_param("s", $msg);
     $stmtNotif->execute();
 
@@ -120,18 +120,18 @@ if (isset($_POST['request_restock'])) {
 
 // Fetch inventory
 if ($search !== '') {
-  $stmt = $conn->prepare("SELECT * FROM Tbl_inventory WHERE itemName LIKE ? OR category LIKE ?");
+  $stmt = $conn->prepare("SELECT * FROM tbl_inventory WHERE itemName LIKE ? OR category LIKE ?");
   $searchTerm = "%$search%";
   $stmt->bind_param("ss", $searchTerm, $searchTerm);
   $stmt->execute();
   $result = $stmt->get_result();
 } else {
-  $result = $conn->query("SELECT * FROM Tbl_inventory");
+  $result = $conn->query("SELECT * FROM tbl_inventory");
 }
 
 // Fetch Data for Sidebar (Profile & Inventory/Suppliers for Restock)
 $userID = $_SESSION['userID'];
-$userRes = $conn->query("SELECT * FROM Tbl_user WHERE userID = $userID");
+$userRes = $conn->query("SELECT * FROM tbl_user WHERE userID = $userID");
 $profileData = $userRes->fetch_assoc();
 
 
@@ -145,10 +145,10 @@ if (isset($_POST['update_profile'])) {
 
   if (!empty($password)) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
     $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
   } else {
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
     $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
   }
 
@@ -165,11 +165,11 @@ if (isset($_POST['update_profile'])) {
 // Count Unread Notifications
 // Check role for Notification Badge
 $role = $_SESSION['role']; // 'Admin' or 'Employee'
-$notifRes = $conn->query("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = '$role' AND is_read = 0");
+$notifRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = '$role' AND is_read = 0");
 $notifCount = $notifRes->fetch_assoc()['count'];
 
 // Fetch All Suppliers for Dropdown
-$supList = $conn->query("SELECT supplierID, name FROM Tbl_supplier");
+$supList = $conn->query("SELECT supplierID, name FROM tbl_supplier");
 $suppliers = [];
 while ($s = $supList->fetch_assoc()) {
   $suppliers[] = $s;

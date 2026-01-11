@@ -4,24 +4,24 @@ $conn = new mysqli("localhost", "root", "", "aldimar_db");
 if ($conn->connect_error)
     die("Connection failed: " . $conn->connect_error);
 
-echo "--- Tbl_user ---\n";
-$res = $conn->query("SHOW COLUMNS FROM Tbl_user");
+echo "--- tbl_user ---\n";
+$res = $conn->query("SHOW COLUMNS FROM tbl_user");
 while ($row = $res->fetch_assoc()) {
     echo $row['Field'] . " - " . $row['Type'] . "\n";
 }
 
-echo "\n--- Tbl_supplier ---\n";
-$res = $conn->query("SHOW COLUMNS FROM Tbl_supplier");
+echo "\n--- tbl_supplier ---\n";
+$res = $conn->query("SHOW COLUMNS FROM tbl_supplier");
 if ($res) {
     while ($row = $res->fetch_assoc()) {
         echo $row['Field'] . " - " . $row['Type'] . "\n";
     }
 } else {
-    echo "Tbl_supplier might not exist or error.\n";
+    echo "tbl_supplier might not exist or error.\n";
 }
 
-echo "\n--- Tbl_notification ---\n";
-$res = $conn->query("SHOW COLUMNS FROM Tbl_notification");
+echo "\n--- tbl_notification ---\n";
+$res = $conn->query("SHOW COLUMNS FROM tbl_notification");
 while ($row = $res->fetch_assoc()) {
     echo $row['Field'] . " - " . $row['Type'] . "\n";
 }

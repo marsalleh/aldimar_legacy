@@ -1,4 +1,9 @@
 <?php
+// TEMPORARY: Enable error display
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 
 // Database connection
@@ -14,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $role = $_POST['role'];
 
     // Use prepared statement to avoid SQL injection
-    $sql = "SELECT * FROM Tbl_user WHERE username = ? AND role = ?";
+    $sql = "SELECT * FROM tbl_user WHERE username = ? AND role = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ss", $username, $role);
     $stmt->execute();
@@ -51,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $stmt->close();
 }
-$conn->close();
+// DON'T close connection here - moved to end of file
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -257,3 +262,7 @@ $conn->close();
 </body>
 
 </html>
+<?php
+// Close connection at the very end
+$conn->close();
+?>

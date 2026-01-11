@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Check if username or email already exists
-    $check = $conn->prepare("SELECT * FROM Tbl_user WHERE username=? OR email=?");
+    $check = $conn->prepare("SELECT * FROM tbl_user WHERE username=? OR email=?");
     $check->bind_param("ss", $username, $email);
     $check->execute();
     $result = $check->get_result();
@@ -32,13 +32,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $messageType = "error";
     } else {
         // Insert new user
-        $sql = "INSERT INTO Tbl_user (username, password, role, email, phone, name) VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO tbl_user (username, password, role, email, phone, name) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssssss", $username, $hashedPassword, $role, $email, $phone, $name);
 
         if ($stmt->execute()) {
             // Send Notification to Admin
-            $conn->query("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES ('New User Registered: $username', 'Admin', NOW())");
+            $conn->query("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES ('New User Registered: $username', 'Admin', NOW())");
 
             // Redirect to index.php which has been refactored
             echo "<script>alert('Registration successful! Please wait for Admin to assign your role.'); window.location.href='index.php';</script>";

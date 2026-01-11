@@ -34,7 +34,7 @@ $todaySales = $todaySalesResult['total'] ? number_format($todaySalesResult['tota
 $stmt->close();
 
 // Count Unread Notifications (Employee)
-$notifRes = $conn->query("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = 'Employee' AND is_read = 0");
+$notifRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Employee' AND is_read = 0");
 $notifCount = $notifRes->fetch_assoc()['count'];
 
 
@@ -70,7 +70,7 @@ while ($row = $resSales->fetch_assoc()) {
 
 // Fetch Notifications (System Alerts for Employee)
 $sqlNotifs = "SELECT 'alert' as type, dateSent as time, message as content 
-              FROM Tbl_notification 
+              FROM tbl_notification 
               WHERE recipientRole = 'Employee' 
               ORDER BY dateSent DESC LIMIT 5";
 $resNotifs = $conn->query($sqlNotifs);
@@ -97,10 +97,10 @@ if (isset($_POST['update_profile'])) {
 
   if (!empty($password)) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
     $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
   } else {
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
     $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
   }
 
@@ -116,7 +116,7 @@ if (isset($_POST['update_profile'])) {
 }
 
 // Fetch Sidebar Data (Profile)
-$profileData = $conn->query("SELECT * FROM Tbl_user WHERE userID = " . $_SESSION['userID'])->fetch_assoc();
+$profileData = $conn->query("SELECT * FROM tbl_user WHERE userID = " . $_SESSION['userID'])->fetch_assoc();
 
 $conn->close();
 ?>

@@ -16,13 +16,13 @@ if (isset($_POST['update_status'])) {
   $newStatus = $_POST['status'];
   $itemName = $_POST['itemName'];
 
-  $stmt = $conn->prepare("UPDATE Tbl_restock_request SET status=?, updatedDate=NOW() WHERE requestID=?");
+  $stmt = $conn->prepare("UPDATE tbl_restock_request SET status=?, updatedDate=NOW() WHERE requestID=?");
   $stmt->bind_param("si", $newStatus, $requestID);
 
   if ($stmt->execute()) {
     // Notify Admin
     $msg = "Supplier Update: Item '$itemName' status changed to '$newStatus'";
-    $stmtNotif = $conn->prepare("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES (?, 'Admin', NOW())");
+    $stmtNotif = $conn->prepare("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES (?, 'Admin', NOW())");
     $stmtNotif->bind_param("s", $msg);
     $stmtNotif->execute();
 
@@ -39,7 +39,7 @@ if (isset($_POST['update_status'])) {
 // Handle Delete Notification
 if (isset($_GET['delete_notif'])) {
   $notifID = intval($_GET['delete_notif']);
-  $conn->query("DELETE FROM Tbl_notification WHERE notifID = $notifID");
+  $conn->query("DELETE FROM tbl_notification WHERE notifID = $notifID");
   header("Location: supplier_dashboard.php");
   exit();
 }
@@ -47,7 +47,7 @@ if (isset($_GET['delete_notif'])) {
 // Handle Delete Restock Request
 if (isset($_GET['delete_request'])) {
   $requestID = intval($_GET['delete_request']);
-  $conn->query("DELETE FROM Tbl_restock_request WHERE requestID = $requestID");
+  $conn->query("DELETE FROM tbl_restock_request WHERE requestID = $requestID");
   header("Location: supplier_dashboard.php?deleted=1");
   exit();
 }
@@ -62,10 +62,10 @@ if (isset($_POST['update_profile'])) {
 
   if (!empty($password)) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
     $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
   } else {
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
     $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
   }
 
@@ -81,8 +81,8 @@ if (isset($_POST['update_profile'])) {
 
 // Fetch Restock Requests for this Supplier
 $userID = $_SESSION['userID'];
-// 1. Get Email from Tbl_user
-$stmtUser = $conn->prepare("SELECT email FROM Tbl_user WHERE userID = ?");
+// 1. Get Email FROM tbl_user
+$stmtUser = $conn->prepare("SELECT email FROM tbl_user WHERE userID = ?");
 $stmtUser->bind_param("i", $userID);
 $stmtUser->execute();
 $uRes = $stmtUser->get_result();
@@ -97,34 +97,34 @@ $supplierName = ($sRes->num_rows > 0) ? $sRes->fetch_assoc()['name'] : '';
 
 // 3. Filter Requests based on Supplier Name
 if ($supplierName) {
-  $stmtReq = $conn->prepare("SELECT * FROM Tbl_restock_request WHERE supplierName = ? ORDER BY requestDate DESC");
+  $stmtReq = $conn->prepare("SELECT * FROM tbl_restock_request WHERE supplierName = ? ORDER BY requestDate DESC");
   $stmtReq->bind_param("s", $supplierName);
   $stmtReq->execute();
   $reqResult = $stmtReq->get_result();
 } else {
   // No matching supplier found for this user
-  $reqResult = $conn->query("SELECT * FROM Tbl_restock_request WHERE 1=0");
+  $reqResult = $conn->query("SELECT * FROM tbl_restock_request WHERE 1=0");
 }
 
 // Fetch Notifications for Supplier (Filtered by Name in Message)
 if ($supplierName) {
-  $stmtNotif = $conn->prepare("SELECT * FROM Tbl_notification WHERE recipientRole = 'Supplier' AND message LIKE CONCAT('%', ?, '%') ORDER BY dateSent DESC LIMIT 5");
+  $stmtNotif = $conn->prepare("SELECT * FROM tbl_notification WHERE recipientRole = 'Supplier' AND message LIKE CONCAT('%', ?, '%') ORDER BY dateSent DESC LIMIT 5");
   $stmtNotif->bind_param("s", $supplierName);
   $stmtNotif->execute();
   $notifRes = $stmtNotif->get_result();
 
   // Count Unread Notifications (For Badge)
-  $stmtUnread = $conn->prepare("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = 'Supplier' AND is_read = 0 AND message LIKE CONCAT('%', ?, '%')");
+  $stmtUnread = $conn->prepare("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Supplier' AND is_read = 0 AND message LIKE CONCAT('%', ?, '%')");
   $stmtUnread->bind_param("s", $supplierName);
   $stmtUnread->execute();
   $notifCount = $stmtUnread->get_result()->fetch_assoc()['count'];
 } else {
-  $notifRes = $conn->query("SELECT * FROM Tbl_notification WHERE 1=0");
+  $notifRes = $conn->query("SELECT * FROM tbl_notification WHERE 1=0");
   $notifCount = 0;
 }
 
 // Fetch Sidebar Data (Profile)
-$profileData = $conn->query("SELECT * FROM Tbl_user WHERE userID = " . $_SESSION['userID'])->fetch_assoc();
+$profileData = $conn->query("SELECT * FROM tbl_user WHERE userID = " . $_SESSION['userID'])->fetch_assoc();
 
 $conn->close();
 ?>

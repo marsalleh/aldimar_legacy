@@ -13,27 +13,27 @@ require_once 'db_config.php';
 // Handle Delete Notification
 if (isset($_GET['delete_id'])) {
   $id = intval($_GET['delete_id']);
-  $conn->query("DELETE FROM Tbl_notification WHERE notifID = $id");
+  $conn->query("DELETE FROM tbl_notification WHERE notifID = $id");
   header("Location: employee_notification.php");
   exit();
 }
 
 // Handle Clear All
 if (isset($_GET['clear_all'])) {
-  $conn->query("DELETE FROM Tbl_notification WHERE recipientRole = 'Employee'");
+  $conn->query("DELETE FROM tbl_notification WHERE recipientRole = 'Employee'");
   header("Location: employee_notification.php");
   exit();
 }
 
 // 1. Count Unread (Before marking as read, so badge shows count)
-$unreadRes = $conn->query("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = 'Employee' AND is_read = 0");
+$unreadRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Employee' AND is_read = 0");
 $notifCount = $unreadRes->fetch_assoc()['count'];
 
 // 2. Fetch Notifications (Before marking as read, so we can style new ones distinctively)
-$result = $conn->query("SELECT * FROM Tbl_notification WHERE recipientRole = 'Employee' ORDER BY dateSent DESC");
+$result = $conn->query("SELECT * FROM tbl_notification WHERE recipientRole = 'Employee' ORDER BY dateSent DESC");
 
 // 3. Mark all as read (For next time)
-$conn->query("UPDATE Tbl_notification SET is_read = 1 WHERE recipientRole = 'Employee' AND is_read = 0");
+$conn->query("UPDATE tbl_notification SET is_read = 1 WHERE recipientRole = 'Employee' AND is_read = 0");
 
 
 // Handle Profile Update
@@ -46,10 +46,10 @@ if (isset($_POST['update_profile'])) {
 
   if (!empty($password)) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
     $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
   } else {
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
     $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
   }
 
@@ -64,7 +64,7 @@ if (isset($_POST['update_profile'])) {
 }
 
 // Fetch Sidebar Data (Profile)
-$profileData = $conn->query("SELECT * FROM Tbl_user WHERE userID = " . $_SESSION['userID'])->fetch_assoc();
+$profileData = $conn->query("SELECT * FROM tbl_user WHERE userID = " . $_SESSION['userID'])->fetch_assoc();
 
 $conn->close();
 ?>

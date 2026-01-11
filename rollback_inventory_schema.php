@@ -4,10 +4,10 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "ALTER TABLE Tbl_inventory DROP COLUMN tags";
+$sql = "ALTER TABLE tbl_inventory DROP COLUMN tags";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Column 'tags' dropped successfully from Tbl_inventory";
+    echo "Column 'tags' dropped successfully from tbl_inventory";
 } else {
     echo "Error dropping column: " . $conn->error;
 }

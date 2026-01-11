@@ -36,7 +36,7 @@ if (isset($_POST['edit_supplier'])) {
   $stmt1->execute();
 
   // Optionally update user table if linked (as per previous logic)
-  $stmt2 = $conn->prepare("UPDATE Tbl_user SET name=?, email=?, phone=? WHERE email=? AND role='Supplier'");
+  $stmt2 = $conn->prepare("UPDATE tbl_user SET name=?, email=?, phone=? WHERE email=? AND role='Supplier'");
   $stmt2->bind_param("ssss", $name, $email, $phone, $email);
   $stmt2->execute();
 
@@ -57,7 +57,7 @@ if (isset($_GET['delete_request'])) {
   $reqID = intval($_GET['delete_request']);
 
   // Fetch details to find associated notification
-  $stmtFetch = $conn->prepare("SELECT itemName, quantity, supplierName FROM Tbl_restock_request WHERE requestID = ?");
+  $stmtFetch = $conn->prepare("SELECT itemName, quantity, supplierName FROM tbl_restock_request WHERE requestID = ?");
   $stmtFetch->bind_param("i", $reqID);
   $stmtFetch->execute();
   $resFetch = $stmtFetch->get_result();
@@ -73,12 +73,12 @@ if (isset($_GET['delete_request'])) {
     $notifMsg = "New Restock Request for $sName: $iName (Qty: $qty)";
 
     // Delete Notification
-    $stmtDelNotif = $conn->prepare("DELETE FROM Tbl_notification WHERE message = ? AND recipientRole = 'Supplier'");
+    $stmtDelNotif = $conn->prepare("DELETE FROM tbl_notification WHERE message = ? AND recipientRole = 'Supplier'");
     $stmtDelNotif->bind_param("s", $notifMsg);
     $stmtDelNotif->execute();
 
     // Delete Request
-    $conn->query("DELETE FROM Tbl_restock_request WHERE requestID = $reqID");
+    $conn->query("DELETE FROM tbl_restock_request WHERE requestID = $reqID");
   }
 
   header("Location: manage_supplier.php?deleted=1");
@@ -98,7 +98,7 @@ if ($search !== '') {
 
 // Fetch Data for Sidebar (Profile & Inventory/Suppliers for Restock)
 $userID = $_SESSION['userID'];
-$userRes = $conn->query("SELECT * FROM Tbl_user WHERE userID = $userID");
+$userRes = $conn->query("SELECT * FROM tbl_user WHERE userID = $userID");
 $profileData = $userRes->fetch_assoc();
 
 
@@ -112,10 +112,10 @@ if (isset($_POST['update_profile'])) {
 
   if (!empty($password)) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
     $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
   } else {
-    $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+    $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
     $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
   }
 
@@ -130,7 +130,7 @@ if (isset($_POST['update_profile'])) {
 }
 
 // Count Unread Notifications
-$notifRes = $conn->query("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
+$notifRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
 $notifCount = $notifRes->fetch_assoc()['count'];
 
 // Fetch Inventory for Restock Dropdown
@@ -154,7 +154,7 @@ if (isset($_POST['send_request'])) {
   $finalMsg = "Restock Request: $iName. Target: $sName. Msg: $customMsg";
   $dateSent = date('Y-m-d H:i:s');
 
-  $stmt = $conn->prepare("INSERT INTO Tbl_notification (message, recipientRole, dateSent) VALUES (?, 'Supplier', ?)");
+  $stmt = $conn->prepare("INSERT INTO tbl_notification (message, recipientRole, dateSent) VALUES (?, 'Supplier', ?)");
   $stmt->bind_param("ss", $finalMsg, $dateSent);
 
   if ($stmt->execute()) {
@@ -831,7 +831,7 @@ if (isset($_POST['send_request'])) {
           </thead>
           <tbody>
             <?php
-            $reqRes = $conn->query("SELECT * FROM Tbl_restock_request ORDER BY requestDate DESC");
+            $reqRes = $conn->query("SELECT * FROM tbl_restock_request ORDER BY requestDate DESC");
             if ($reqRes->num_rows > 0) {
               while ($req = $reqRes->fetch_assoc()) {
                 $statusColor = 'gray';

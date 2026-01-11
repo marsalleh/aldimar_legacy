@@ -14,7 +14,7 @@ $reportType = $_GET['report_type'] ?? 'daily'; // daily, monthly, yearly, specif
 
 // Fetch Data for Sidebar (Profile & Inventory/Suppliers for Restock)
 $userID = $_SESSION['userID'];
-$userRes = $conn->query("SELECT * FROM Tbl_user WHERE userID = $userID");
+$userRes = $conn->query("SELECT * FROM tbl_user WHERE userID = $userID");
 $profileData = $userRes->fetch_assoc();
 
 
@@ -28,10 +28,10 @@ if (isset($_POST['update_profile'])) {
 
     if (!empty($password)) {
         $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+        $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
         $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
     } else {
-        $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+        $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
         $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
     }
 
@@ -44,7 +44,7 @@ if (isset($_POST['update_profile'])) {
 }
 
 // Count Unread Notifications
-$notifRes = $conn->query("SELECT COUNT(*) as count FROM Tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
+$notifRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
 $notifCount = $notifRes->fetch_assoc()['count'];
 
 // Date Selection handling
@@ -93,7 +93,7 @@ if ($reportType === 'specific_date') {
 }
 
 // 1. Fetch Chart Data (Trends)
-$trendQuery = "SELECT MIN(DATE(date)) as date, SUM(totalPrice) as total, COUNT(*) as count FROM Tbl_salesRecord $trendCondition $groupBy ORDER BY date ASC";
+$trendQuery = "SELECT MIN(DATE(date)) as date, SUM(totalPrice) as total, COUNT(*) as count FROM tbl_salesrecord $trendCondition $groupBy ORDER BY date ASC";
 $trendResult = $conn->query($trendQuery);
 
 while ($row = $trendResult->fetch_assoc()) {
@@ -104,13 +104,13 @@ while ($row = $trendResult->fetch_assoc()) {
 }
 
 // 2. Fetch Summary Metrics (Revenue / Transactions) - Uses Main Condition
-$summaryQuery = "SELECT SUM(totalPrice) as total, COUNT(*) as count FROM Tbl_salesRecord $mainCondition";
+$summaryQuery = "SELECT SUM(totalPrice) as total, COUNT(*) as count FROM tbl_salesrecord $mainCondition";
 $summaryRow = $conn->query($summaryQuery)->fetch_assoc();
 $totalSales = $summaryRow['total'] ?? 0.00;
 $totalTransactions = $summaryRow['count'] ?? 0;
 
 // 3. Fetch Top 5 Selling Items (in period) - Uses Main Condition
-$topQuery = "SELECT i.itemName, SUM(s.quantity) as qty FROM Tbl_salesRecord s JOIN Tbl_inventory i ON s.itemID = i.itemID $mainCondition GROUP BY s.itemID ORDER BY qty DESC LIMIT 5";
+$topQuery = "SELECT i.itemName, SUM(s.quantity) as qty FROM tbl_salesrecord s JOIN tbl_inventory i ON s.itemID = i.itemID $mainCondition GROUP BY s.itemID ORDER BY qty DESC LIMIT 5";
 $topResult = $conn->query($topQuery);
 
 $topLabels = [];
@@ -131,7 +131,7 @@ elseif ($reportType === 'monthly')
 
 $havingClause = ($leastThreshold > 0) ? "HAVING qty <= $leastThreshold" : "";
 
-$leastQuery = "SELECT i.itemName, SUM(s.quantity) as qty FROM Tbl_salesRecord s JOIN Tbl_inventory i ON s.itemID = i.itemID $mainCondition GROUP BY s.itemID $havingClause ORDER BY qty ASC LIMIT 5";
+$leastQuery = "SELECT i.itemName, SUM(s.quantity) as qty FROM tbl_salesrecord s JOIN tbl_inventory i ON s.itemID = i.itemID $mainCondition GROUP BY s.itemID $havingClause ORDER BY qty ASC LIMIT 5";
 $leastResult = $conn->query($leastQuery);
 
 // Handle Profile Update (Sidebar)
@@ -143,10 +143,10 @@ if (isset($_POST['update_profile'])) {
 
     if (!empty($password)) {
         $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
+        $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=?, password=? WHERE userID=?");
         $stmt->bind_param("ssssi", $newUsername, $email, $phone, $hashed, $userID);
     } else {
-        $stmt = $conn->prepare("UPDATE Tbl_user SET username=?, email=?, phone=? WHERE userID=?");
+        $stmt = $conn->prepare("UPDATE tbl_user SET username=?, email=?, phone=? WHERE userID=?");
         $stmt->bind_param("sssi", $newUsername, $email, $phone, $userID);
     }
 
