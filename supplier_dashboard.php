@@ -1,4 +1,9 @@
 <?php
+// TEMPORARY: Enable error display for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
@@ -108,13 +113,13 @@ if ($supplierName) {
 
 // Fetch Notifications for Supplier (Filtered by Name in Message)
 if ($supplierName) {
-  $stmtNotif = $conn->prepare("SELECT * FROM tbl_notification WHERE recipientRole = 'Supplier' AND message LIKE CONCAT('%', ?, '%') ORDER BY dateSent DESC LIMIT 5");
+  $stmtNotif = $conn->prepare("SELECT * FROM tbl_notification WHERE recipientRole = 'Supplier' AND message COLLATE utf8mb4_general_ci LIKE CONCAT('%', ?, '%') ORDER BY dateSent DESC LIMIT 5");
   $stmtNotif->bind_param("s", $supplierName);
   $stmtNotif->execute();
   $notifRes = $stmtNotif->get_result();
 
   // Count Unread Notifications (For Badge)
-  $stmtUnread = $conn->prepare("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Supplier' AND is_read = 0 AND message LIKE CONCAT('%', ?, '%')");
+  $stmtUnread = $conn->prepare("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Supplier' AND is_read = 0 AND message COLLATE utf8mb4_general_ci LIKE CONCAT('%', ?, '%')");
   $stmtUnread->bind_param("s", $supplierName);
   $stmtUnread->execute();
   $notifCount = $stmtUnread->get_result()->fetch_assoc()['count'];
