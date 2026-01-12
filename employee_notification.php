@@ -492,8 +492,8 @@ $conn->close();
                   </div>
                   <div class="notif-msg"><?= htmlspecialchars($row['message']) ?></div>
                 </div>
-                <a href="?delete_id=<?= $row['notifID'] ?>" class="btn-delete" title="Remove"><i
-                    class="fas fa-times"></i></a>
+                <a href="?delete_id=<?= $row['notifID'] ?>" class="btn-delete" title="Remove"
+                  onclick="return confirm('Delete this notification?')"><i class="fas fa-times"></i></a>
               </div>
             <?php endwhile; ?>
           <?php else: ?>
