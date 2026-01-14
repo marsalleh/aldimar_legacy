@@ -145,8 +145,8 @@ if (isset($_POST['update_profile'])) {
 $notifRes = $conn->query("SELECT COUNT(*) as count FROM tbl_notification WHERE recipientRole = 'Admin' AND is_read = 0");
 $notifCount = $notifRes->fetch_assoc()['count'];
 
-// Fetch Inventory for Restock Dropdown
-$resItems = $conn->query("SELECT itemID, itemName FROM tbl_inventory ORDER BY itemName ASC");
+// Fetch Inventory for Restock Dropdown (with supplier info)
+$resItems = $conn->query("SELECT itemID, itemName, supplierID FROM tbl_inventory ORDER BY itemName ASC");
 
 // Handle Restock Notification
 if (isset($_POST['send_request'])) {
@@ -737,20 +737,9 @@ if (isset($_POST['send_request'])) {
         </div>
         <form method="POST" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
           <div style="flex: 1; min-width: 200px;">
-            <label style="display:block; margin-bottom:5px; font-weight:600;">Select Item</label>
-            <select name="item_id" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
-              <option value="" disabled selected>-- Choose Item --</option>
-              <?php if ($resItems->num_rows > 0) {
-                $resItems->data_seek(0);
-                while ($item = $resItems->fetch_assoc()) {
-                  echo "<option value='" . $item['itemID'] . "'>" . htmlspecialchars($item['itemName']) . "</option>";
-                }
-              } ?>
-            </select>
-          </div>
-          <div style="flex: 1; min-width: 200px;">
-            <label style="display:block; margin-bottom:5px; font-weight:600;">Target Supplier (Optional)</label>
-            <select name="supplier_id" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            <label style="display:block; margin-bottom:5px; font-weight:600;">Target Supplier</label>
+            <select name="supplier_id" id="supplierSelect" onchange="filterProductsBySupplier()"
+              style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
               <option value="">-- All Suppliers --</option>
               <?php
               // Reuse result but reset pointer? No, need separate query or re-loop array. 
@@ -767,6 +756,20 @@ if (isset($_POST['send_request'])) {
                 $result->data_seek(0); // Reset for table below
               }
               ?>
+            </select>
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <label style="display:block; margin-bottom:5px; font-weight:600;">Select Item</label>
+            <select name="item_id" id="itemSelect" required
+              style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+              <option value="" disabled selected>-- Choose Item --</option>
+              <?php if ($resItems->num_rows > 0) {
+                $resItems->data_seek(0);
+                while ($item = $resItems->fetch_assoc()) {
+                  $supplierAttr = $item['supplierID'] ? 'data-supplier-id="' . $item['supplierID'] . '"' : 'data-supplier-id="unassigned"';
+                  echo "<option value='" . $item['itemID'] . "' " . $supplierAttr . ">" . htmlspecialchars($item['itemName']) . "</option>";
+                }
+              } ?>
             </select>
           </div>
           <div style="flex: 2; min-width: 300px;">
@@ -1052,6 +1055,41 @@ if (isset($_POST['send_request'])) {
 
     function openLogoutModal() {
       document.getElementById('logoutModal').style.display = 'flex';
+    }
+
+    // Filter products by selected supplier
+    function filterProductsBySupplier() {
+      const supplierSelect = document.getElementById('supplierSelect');
+      const itemSelect = document.getElementById('itemSelect');
+      const selectedSupplier = supplierSelect.value;
+
+      // Get all options
+      const options = itemSelect.querySelectorAll('option');
+
+      // Reset to default option
+      itemSelect.value = '';
+
+      // Show/hide options based on supplier
+      options.forEach(option => {
+        if (option.value === '') {
+          // Always show the placeholder
+          option.style.display = '';
+          return;
+        }
+
+        const productSupplier = option.getAttribute('data-supplier-id');
+
+        if (selectedSupplier === '') {
+          // Show all products when no supplier selected
+          option.style.display = '';
+        } else if (productSupplier === selectedSupplier) {
+          // Show products matching selected supplier
+          option.style.display = '';
+        } else {
+          // Hide non-matching products
+          option.style.display = 'none';
+        }
+      });
     }
   </script>
 </body>
