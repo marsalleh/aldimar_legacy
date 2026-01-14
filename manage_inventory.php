@@ -11,6 +11,8 @@ require_once 'db_config.php';
 
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$categoryFilter = isset($_GET['category']) ? trim($_GET['category']) : '';
+$supplierFilter = isset($_GET['supplier']) ? trim($_GET['supplier']) : '';
 $dashboardLink = ($_SESSION['role'] === 'Admin') ? 'admin_dashboard.php' : 'employee_dashboard.php';
 
 // Add product
@@ -21,10 +23,11 @@ if (isset($_POST['add_product'])) {
   $sellingPrice = $_POST['sellingPrice'];
   $quantity = $_POST['stockQuantity'];
   $threshold = $_POST['threshold'];
+  $supplierID = !empty($_POST['supplierID']) ? $_POST['supplierID'] : NULL;
   $status = ($quantity <= $threshold) ? 'Low Stock' : 'Available';
 
-  $stmt = $conn->prepare("INSERT INTO tbl_inventory (itemName, category, price, sellingPrice, stockQuantity, threshold, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-  $stmt->bind_param("ssddiss", $name, $category, $price, $sellingPrice, $quantity, $threshold, $status);
+  $stmt = $conn->prepare("INSERT INTO tbl_inventory (itemName, category, price, sellingPrice, stockQuantity, threshold, status, supplierID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+  $stmt->bind_param("ssddissi", $name, $category, $price, $sellingPrice, $quantity, $threshold, $status, $supplierID);
 
   if ($stmt->execute()) {
     if ($status === 'Low Stock') {
@@ -44,14 +47,15 @@ if (isset($_POST['save_edit'])) {
   $sellingPrice = $_POST['sellingPrice'];
   $quantity = $_POST['stockQuantity'];
   $threshold = $_POST['threshold'];
+  $supplierID = !empty($_POST['supplierID']) ? $_POST['supplierID'] : NULL;
   $status = ($quantity <= $threshold) ? 'Low Stock' : 'Available';
 
   // Fetch old data to check for restock
   $oldQQuery = $conn->query("SELECT stockQuantity FROM tbl_inventory WHERE itemID=$id");
   $oldQ = $oldQQuery->fetch_assoc()['stockQuantity'];
 
-  $stmt = $conn->prepare("UPDATE tbl_inventory SET itemName=?, category=?, price=?, sellingPrice=?, stockQuantity=?, threshold=?, status=? WHERE itemID=?");
-  $stmt->bind_param("ssddissi", $name, $category, $price, $sellingPrice, $quantity, $threshold, $status, $id);
+  $stmt = $conn->prepare("UPDATE tbl_inventory SET itemName=?, category=?, price=?, sellingPrice=?, stockQuantity=?, threshold=?, status=?, supplierID=? WHERE itemID=?");
+  $stmt->bind_param("ssddissii", $name, $category, $price, $sellingPrice, $quantity, $threshold, $status, $supplierID, $id);
   $stmt->execute();
 
   // Notifications
@@ -118,15 +122,55 @@ if (isset($_POST['request_restock'])) {
   }
 }
 
-// Fetch inventory
+// Fetch all distinct categories for dropdown
+$categoriesResult = $conn->query("SELECT DISTINCT category FROM tbl_inventory WHERE category IS NOT NULL AND category != '' ORDER BY category");
+$categories = [];
+while ($cat = $categoriesResult->fetch_assoc()) {
+  $categories[] = $cat['category'];
+}
+
+// Build dynamic query based on active filters
+$conditions = [];
+$params = [];
+$types = "";
+
 if ($search !== '') {
-  $stmt = $conn->prepare("SELECT * FROM tbl_inventory WHERE itemName LIKE ? OR category LIKE ?");
+  $conditions[] = "(i.itemName LIKE ? OR i.category LIKE ?)";
   $searchTerm = "%$search%";
-  $stmt->bind_param("ss", $searchTerm, $searchTerm);
+  $params[] = $searchTerm;
+  $params[] = $searchTerm;
+  $types .= "ss";
+}
+
+if ($categoryFilter !== '') {
+  $conditions[] = "i.category = ?";
+  $params[] = $categoryFilter;
+  $types .= "s";
+}
+
+if ($supplierFilter !== '') {
+  if ($supplierFilter === 'unassigned') {
+    $conditions[] = "i.supplierID IS NULL";
+  } else {
+    $conditions[] = "i.supplierID = ?";
+    $params[] = $supplierFilter;
+    $types .= "i";
+  }
+}
+
+$query = "SELECT i.*, s.name as supplierName FROM tbl_inventory i LEFT JOIN tbl_supplier s ON i.supplierID = s.supplierID";
+
+if (!empty($conditions)) {
+  $query .= " WHERE " . implode(' AND ', $conditions);
+}
+
+if (!empty($params)) {
+  $stmt = $conn->prepare($query);
+  $stmt->bind_param($types, ...$params);
   $stmt->execute();
   $result = $stmt->get_result();
 } else {
-  $result = $conn->query("SELECT * FROM tbl_inventory");
+  $result = $conn->query($query);
 }
 
 // Fetch Data for Sidebar (Profile & Inventory/Suppliers for Restock)
@@ -368,12 +412,13 @@ while ($s = $supList->fetch_assoc()) {
       align-items: center;
       margin-bottom: 25px;
       flex-wrap: wrap;
-      gap: 15px;
+      gap: 20px;
     }
 
     .page-header h2 {
       color: #5e4b8b;
       font-size: 22px;
+      margin: 0;
     }
 
     .search-box {
@@ -396,6 +441,63 @@ while ($s = $supList->fetch_assoc()) {
       transform: translateY(-50%);
       color: #888;
     }
+
+    .filter-group {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .category-filter {
+      position: relative;
+    }
+
+    .category-filter select {
+      padding: 10px 40px 10px 15px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      outline: none;
+      min-width: 200px;
+      background-color: white;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235e4b8b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      transition: border-color 0.3s;
+    }
+
+    .category-filter select:hover {
+      border-color: #5e4b8b;
+    }
+
+    .category-filter select:focus {
+      border-color: #5e4b8b;
+      box-shadow: 0 0 0 3px rgba(94, 75, 139, 0.1);
+    }
+
+    .category-filter::before {
+      content: '\f03a';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #5e4b8b;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .category-filter select {
+      padding-left: 40px;
+    }
+
 
     .add-btn {
       background-color: #5e4b8b;
@@ -719,12 +821,58 @@ while ($s = $supList->fetch_assoc()) {
         <div class="content-card">
           <div class="page-header">
             <h2>Manage Inventory</h2>
-            <div class="search-box">
-              <form method="GET">
-                <input type="text" name="search" placeholder="Search by Name or Category..."
-                  value="<?= htmlspecialchars($search) ?>">
-                <i class="fas fa-search"></i>
-              </form>
+            <div class="filter-group">
+              <div class="category-filter">
+                <form method="GET" id="categoryForm">
+                  <select name="category" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    <?php foreach ($categories as $cat): ?>
+                      <option value="<?= htmlspecialchars($cat) ?>" <?= ($categoryFilter === $cat) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($cat) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                  <?php if ($search !== ''): ?>
+                    <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                  <?php endif; ?>
+                  <?php if ($supplierFilter !== ''): ?>
+                    <input type="hidden" name="supplier" value="<?= htmlspecialchars($supplierFilter) ?>">
+                  <?php endif; ?>
+                </form>
+              </div>
+              <div class="category-filter">
+                <form method="GET" id="supplierForm">
+                  <select name="supplier" onchange="this.form.submit()">
+                    <option value="">All Suppliers</option>
+                    <option value="unassigned" <?= ($supplierFilter === 'unassigned') ? 'selected' : '' ?>>Unassigned
+                    </option>
+                    <?php foreach ($suppliers as $sup): ?>
+                      <option value="<?= $sup['supplierID'] ?>" <?= ($supplierFilter == $sup['supplierID']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($sup['name']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                  <?php if ($search !== ''): ?>
+                    <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                  <?php endif; ?>
+                  <?php if ($categoryFilter !== ''): ?>
+                    <input type="hidden" name="category" value="<?= htmlspecialchars($categoryFilter) ?>">
+                  <?php endif; ?>
+                </form>
+              </div>
+              <div class="search-box">
+                <form method="GET">
+                  <input type="text" name="search" placeholder="Search by Name or Category..."
+                    value="<?= htmlspecialchars($search) ?>">
+                  <i class="fas fa-search"></i>
+                  <?php if ($categoryFilter !== ''): ?>
+                    <input type="hidden" name="category" value="<?= htmlspecialchars($categoryFilter) ?>">
+                  <?php endif; ?>
+                  <?php if ($supplierFilter !== ''): ?>
+                    <input type="hidden" name="supplier" value="<?= htmlspecialchars($supplierFilter) ?>">
+                  <?php endif; ?>
+                </form>
+              </div>
             </div>
             <button class="add-btn" onclick="document.getElementById('addModal').style.display='flex'">
               <i class="fas fa-plus"></i> Add Product
@@ -741,6 +889,7 @@ while ($s = $supList->fetch_assoc()) {
                 <th>Selling (RM)</th>
                 <th>Qty</th>
                 <th>Status</th>
+                <th>Supplier</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -756,9 +905,12 @@ while ($s = $supList->fetch_assoc()) {
                   <td><?= number_format($row['sellingPrice'], 2) ?></td>
                   <td><?= $row['stockQuantity'] ?></td>
                   <td class="<?= $statusClass ?>"><?= $row['status'] ?></td>
+                  <td>
+                    <?= $row['supplierName'] ? htmlspecialchars($row['supplierName']) : '<em style="color:#999;">Not Assigned</em>' ?>
+                  </td>
                   <td class="actions">
                     <button class="edit-btn"
-                      onclick="openEditModal(<?= $row['itemID'] ?>, '<?= htmlspecialchars($row['itemName'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['category'], ENT_QUOTES) ?>', <?= $row['price'] ?>, <?= $row['sellingPrice'] ?>, <?= $row['stockQuantity'] ?>, <?= $row['threshold'] ?>)"><i
+                      onclick="openEditModal(<?= $row['itemID'] ?>, '<?= htmlspecialchars($row['itemName'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['category'], ENT_QUOTES) ?>', <?= $row['price'] ?>, <?= $row['sellingPrice'] ?>, <?= $row['stockQuantity'] ?>, <?= $row['threshold'] ?>, <?= $row['supplierID'] ?? 'null' ?>)"><i
                         class="fas fa-edit"></i> Edit</button>
                     <?php if ($_SESSION['role'] === 'Admin'): ?>
                       <button class="delete-btn" style="background-color: #2ecc71;"
@@ -785,6 +937,14 @@ while ($s = $supList->fetch_assoc()) {
       <form method="POST">
         <label>Item Name</label><input type="text" name="itemName" required>
         <label>Category</label><input type="text" name="category" required>
+        <label>Supplier</label>
+        <select name="supplierID"
+          style="width:100%; padding:10px; margin-top:5px; border:1px solid #ddd; border-radius:6px;">
+          <option value="">-- No Supplier --</option>
+          <?php foreach ($suppliers as $sup): ?>
+            <option value="<?= $sup['supplierID'] ?>"><?= htmlspecialchars($sup['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
         <div style="display:flex; gap:10px;">
           <div style="flex:1;"><label>Cost Price</label><input type="number" step="0.01" name="price" required></div>
           <div style="flex:1;"><label>Selling Price</label><input type="number" step="0.01" name="sellingPrice"
@@ -811,6 +971,14 @@ while ($s = $supList->fetch_assoc()) {
         <input type="hidden" name="editID" id="editID">
         <label>Item Name</label><input type="text" name="itemName" id="editName" required>
         <label>Category</label><input type="text" name="category" id="editCategory" required>
+        <label>Supplier</label>
+        <select name="supplierID" id="editSupplier"
+          style="width:100%; padding:10px; margin-top:5px; border:1px solid #ddd; border-radius:6px;">
+          <option value="">-- No Supplier --</option>
+          <?php foreach ($suppliers as $sup): ?>
+            <option value="<?= $sup['supplierID'] ?>"><?= htmlspecialchars($sup['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
         <div style="display:flex; gap:10px;">
           <div style="flex:1;"><label>Cost Price</label><input type="number" step="0.01" name="price" id="editPrice"
               required></div>
@@ -954,7 +1122,7 @@ while ($s = $supList->fetch_assoc()) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    function openEditModal(id, name, category, price, sellingPrice, quantity, threshold) {
+    function openEditModal(id, name, category, price, sellingPrice, quantity, threshold, supplierID) {
       document.getElementById('editID').value = id;
       document.getElementById('editName').value = name;
       document.getElementById('editCategory').value = category;
@@ -962,6 +1130,7 @@ while ($s = $supList->fetch_assoc()) {
       document.getElementById('editSellingPrice').value = sellingPrice;
       document.getElementById('editQuantity').value = quantity;
       document.getElementById('editThreshold').value = threshold;
+      document.getElementById('editSupplier').value = supplierID || '';
       document.getElementById('editModal').style.display = 'flex';
     }
   </script>

@@ -47,6 +47,18 @@ if (isset($_POST['edit_supplier'])) {
 // Handle Delete
 if (isset($_GET['delete'])) {
   $deleteID = intval($_GET['delete']);
+
+  // Check if supplier has linked products
+  $checkProducts = $conn->query("SELECT COUNT(*) as count FROM tbl_inventory WHERE supplierID = $deleteID");
+  $productCount = $checkProducts->fetch_assoc()['count'];
+
+  if ($productCount > 0) {
+    // Supplier has products, prevent deletion
+    header("Location: manage_supplier.php?error=has_products&count=$productCount");
+    exit();
+  }
+
+  // No products linked, safe to delete
   $conn->query("DELETE FROM tbl_supplier WHERE supplierID = $deleteID");
   header("Location: manage_supplier.php?deleted=1");
   exit();
@@ -971,6 +983,14 @@ if (isset($_POST['send_request'])) {
       }
       if (urlParams.has('added') || urlParams.has('updated') || urlParams.has('deleted')) {
         showSuccess("Action completed successfully!");
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      if (urlParams.has('error')) {
+        const errorType = urlParams.get('error');
+        if (errorType === 'has_products') {
+          const count = urlParams.get('count') || '0';
+          alert(`Cannot delete supplier: ${count} product(s) are linked to this supplier. Please reassign or remove the products first.`);
+        }
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }

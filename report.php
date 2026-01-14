@@ -110,14 +110,16 @@ $totalSales = $summaryRow['total'] ?? 0.00;
 $totalTransactions = $summaryRow['count'] ?? 0;
 
 // 3. Fetch Top 5 Selling Items (in period) - Uses Main Condition
-$topQuery = "SELECT i.itemName, SUM(s.quantity) as qty FROM tbl_salesrecord s JOIN tbl_inventory i ON s.itemID = i.itemID $mainCondition GROUP BY s.itemID ORDER BY qty DESC LIMIT 5";
+$topQuery = "SELECT i.itemName, SUM(s.quantity) as qty, SUM(s.quantity * s.price) as revenue FROM tbl_salesrecord s JOIN tbl_inventory i ON s.itemID = i.itemID $mainCondition GROUP BY s.itemID ORDER BY revenue DESC LIMIT 5";
 $topResult = $conn->query($topQuery);
 
 $topLabels = [];
 $topData = [];
+$topRevenue = [];
 while ($row = $topResult->fetch_assoc()) {
     $topLabels[] = $row['itemName'];
     $topData[] = (int) $row['qty'];
+    $topRevenue[] = (float) $row['revenue'];
 }
 
 // 4. Fetch Least Selling Items (in period) - Uses Main Condition
@@ -590,13 +592,14 @@ if (isset($_POST['update_profile'])) {
                             <tr>
                                 <th>Item Name</th>
                                 <th>Units Sold</th>
+                                <th>Revenue</th>
                             </tr>
                             <?php
                             for ($i = 0; $i < count($topLabels); $i++) {
-                                echo "<tr><td>" . htmlspecialchars($topLabels[$i]) . "</td><td>" . $topData[$i] . "</td></tr>";
+                                echo "<tr><td>" . htmlspecialchars($topLabels[$i]) . "</td><td>" . $topData[$i] . "</td><td>RM " . number_format($topRevenue[$i], 2) . "</td></tr>";
                             }
                             if (count($topLabels) == 0)
-                                echo "<tr><td colspan='2'>No data</td></tr>";
+                                echo "<tr><td colspan='3'>No data</td></tr>";
                             ?>
                         </table>
                     </div>
@@ -707,6 +710,7 @@ if (isset($_POST['update_profile'])) {
         const chartData = <?= json_encode($chartData) ?>;
         const topLabels = <?= json_encode($topLabels) ?>;
         const topData = <?= json_encode($topData) ?>;
+        const topRevenue = <?= json_encode($topRevenue) ?>;
 
         // Trend Chart
         new Chart(document.getElementById('trendChart'), {
@@ -729,23 +733,92 @@ if (isset($_POST['update_profile'])) {
             }
         });
 
-        // Top Products Chart
+        // Top Products Chart - Showing both Units Sold and Revenue
         new Chart(document.getElementById('topProductsChart'), {
             type: 'bar',
             data: {
                 labels: topLabels,
-                datasets: [{
-                    label: 'Units Sold',
-                    data: topData,
-                    backgroundColor: ['#5e4b8b', '#7a5dca', '#9b7eda', '#b39ddb', '#d1c4e9'],
-                    borderWidth: 0
-                }]
+                datasets: [
+                    {
+                        label: 'Units Sold',
+                        data: topData,
+                        backgroundColor: '#3498db',
+                        borderWidth: 0,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Revenue (RM)',
+                        data: topRevenue,
+                        backgroundColor: '#5e4b8b',
+                        borderWidth: 0,
+                        yAxisID: 'y1'
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } },
-                plugins: { legend: { display: false } }
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Units Sold',
+                            color: '#3498db',
+                            font: { weight: 'bold' }
+                        },
+                        ticks: {
+                            color: '#3498db'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Revenue (RM)',
+                            color: '#5e4b8b',
+                            font: { weight: 'bold' }
+                        },
+                        ticks: {
+                            color: '#5e4b8b'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.dataset.label === 'Revenue (RM)') {
+                                    label += 'RM ' + context.parsed.y.toFixed(2);
+                                } else {
+                                    label += context.parsed.y + ' units';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
             }
         });
     </script>

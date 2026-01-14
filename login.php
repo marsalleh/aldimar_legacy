@@ -65,8 +65,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <title>Login - Aldimar Legacy</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f4f4f9;
             display: flex;
             justify-content: center;
@@ -75,19 +81,76 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin: 0;
         }
 
-        .login-box {
+        .login-container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            height: 600px;
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            width: 400px;
-            text-align: center;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .login-image {
+            flex: 1;
+            background-image: url('images/shop-photo.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .login-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(94, 75, 139, 0.8), rgba(122, 93, 202, 0.6));
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            color: white;
+            z-index: 1;
+        }
+
+        .image-overlay h3 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-overlay p {
+            font-size: 16px;
+            opacity: 0.95;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-box {
+            flex: 1;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: white;
         }
 
         .login-box h2 {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-weight: bold;
             color: #5e4b8b;
+            font-size: 28px;
+        }
+
+        .login-box .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
         }
 
         .login-box input[type="text"],
@@ -199,46 +262,88 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-bottom: 15px;
             font-size: 14px;
         }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                height: auto;
+                width: 95%;
+            }
+
+            .login-image {
+                min-height: 250px;
+            }
+
+            .image-overlay {
+                bottom: 20px;
+                left: 20px;
+            }
+
+            .image-overlay h3 {
+                font-size: 24px;
+            }
+
+            .image-overlay p {
+                font-size: 14px;
+            }
+
+            .login-box {
+                padding: 40px 30px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="login-box">
-        <h2>ALDIMAR LEGACY</h2>
-
-        <?php if ($error): ?>
-            <div class="error-message"><?php echo $error; ?></div>
-        <?php endif; ?>
-
-        <form method="POST">
-            <input type="text" name="username" placeholder="Username" required>
-
-            <div class="input-wrapper">
-                <input type="password" id="password" name="password" placeholder="Password" required>
-                <!-- Eye Icon (Show) -->
-                <svg class="toggle-icon" id="toggle_login" onclick="togglePassword('password', 'toggle_login')"
-                    viewBox="0 0 24 24">
-                    <path
-                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-                </svg>
+    <div class="login-container">
+        <!-- Left Side: Image -->
+        <div class="login-image">
+            <div class="image-overlay">
+                <h3>Welcome to Aldimar Legacy</h3>
+                <p>Your trusted partner in fashion and style</p>
             </div>
+        </div>
 
-            <div class="forgot-link">
-                <a href="forgot_password.php">Forgot Password?</a>
+        <!-- Right Side: Login Form -->
+        <div class="login-box">
+            <h2>ALDIMAR LEGACY</h2>
+            <p class="subtitle">Sign in to your account</p>
+
+            <?php if ($error): ?>
+                <div class="error-message"><?php echo $error; ?></div>
+            <?php endif; ?>
+
+            <form method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+
+                <div class="input-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Password" required>
+                    <!-- Eye Icon (Show) -->
+                    <svg class="toggle-icon" id="toggle_login" onclick="togglePassword('password', 'toggle_login')"
+                        viewBox="0 0 24 24">
+                        <path
+                            d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                    </svg>
+                </div>
+
+                <div class="forgot-link">
+                    <a href="forgot_password.php">Forgot Password?</a>
+                </div>
+
+                <div class="roles">
+                    <label><input type="radio" name="role" value="Admin" required> Admin</label>
+                    <label><input type="radio" name="role" value="Employee"> Employee</label>
+                    <label><input type="radio" name="role" value="Supplier"> Supplier</label>
+                </div>
+
+                <button type="submit">LOGIN</button>
+            </form>
+
+            <div class="register-link">
+                New user? <a href="register.html">Register</a>
             </div>
-
-            <div class="roles">
-                <label><input type="radio" name="role" value="Admin" required> Admin</label>
-                <label><input type="radio" name="role" value="Employee"> Employee</label>
-                <label><input type="radio" name="role" value="Supplier"> Supplier</label>
-            </div>
-
-            <button type="submit">LOGIN</button>
-        </form>
-
-        <div class="register-link">
-            New user? <a href="register.html">Register</a>
         </div>
     </div>
 
